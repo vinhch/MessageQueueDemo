@@ -26,17 +26,20 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
 
         public IObservable<Unit> Publish<TMessage>(TMessage message)
         {
-            return Observable.StartAsync(async () => 
+            return Observable.Start(() => 
             {
-
+                _rawRabbitClient.PublishAsync(message);
             });
         }
 
         public IObservable<Unit> Subscribe<TMessage>(Func<TMessage, Task> subscribeHandlerMethod)
         {
-            return Observable.StartAsync(async () =>
+            return Observable.Start(() =>
             {
-
+                _rawRabbitClient.SubscribeAsync<TMessage>(async (msg, context) =>
+                {
+                    await subscribeHandlerMethod(msg);
+                });
             });
         }
     }
