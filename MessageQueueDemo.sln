@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.12
+VisualStudioVersion = 15.0.26430.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageQueueDemo", "MessageQueueDemo\MessageQueueDemo.csproj", "{1A83A5BC-4383-4F2D-B411-D059BEC1C4C6}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CHV.Infrastructure", "CHV.Infrastructure\CHV.Infrastructure.csproj", "{8B2E647E-D0B4-4EF2-9CE2-29B8ECFE796B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CHV.Infrastructure.MessageBus", "CHV.Infrastructure.MessageBus\CHV.Infrastructure.MessageBus.csproj", "{FB8C0B44-3D2E-440D-9177-34DF6CFF15AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CHV.Infrastructure.MessageBus.RabbitMq", "CHV.Infrastructure.MessageBus.RabbitMq\CHV.Infrastructure.MessageBus.RabbitMq.csproj", "{20CC5EA7-4F4F-4CEE-9B22-DD4A4300130E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{FB8C0B44-3D2E-440D-9177-34DF6CFF15AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB8C0B44-3D2E-440D-9177-34DF6CFF15AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB8C0B44-3D2E-440D-9177-34DF6CFF15AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20CC5EA7-4F4F-4CEE-9B22-DD4A4300130E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20CC5EA7-4F4F-4CEE-9B22-DD4A4300130E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20CC5EA7-4F4F-4CEE-9B22-DD4A4300130E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20CC5EA7-4F4F-4CEE-9B22-DD4A4300130E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
