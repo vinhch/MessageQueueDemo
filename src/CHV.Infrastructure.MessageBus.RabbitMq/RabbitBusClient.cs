@@ -49,9 +49,10 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             return Observable.Start(() =>
             {
                 _channel.ExchangeDeclare(_exchangeName, "fanout");
+                _channel.QueueDeclare(_queueName, durable: false, exclusive: false, autoDelete: false);
                 var json = JsonConvert.SerializeObject(message, _jsonSerializerSettings);
                 var bytes = Encoding.UTF8.GetBytes(json);
-                _channel.BasicPublish(_exchangeName, "", null, bytes);
+                _channel.BasicPublish(_exchangeName, _queueName, null, bytes);
             });
         }
 
