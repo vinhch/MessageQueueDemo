@@ -39,7 +39,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
 
             _channel = _connection.CreateModel();
             _channel.ExchangeDeclare(_exchangeName, "fanout");
-            _channel.QueueDeclare(_queueName, durable: false, exclusive: false, autoDelete: false);
+            _channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false);
             _channel.QueueBind(_queueName, _exchangeName, _routingKey, null);
         }
 
@@ -66,13 +66,14 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             return Observable.Start(() =>
             {
                 var consumer = new EventingBasicConsumer(_channel);
-                consumer.Received += async (sender, e) =>
+                consumer.Received += (sender, e) =>
                 {
                     var body = e.Body;
                     var json = Encoding.UTF8.GetString(body);
                     var message = JsonConvert.DeserializeObject<TMessage>(json, _jsonSerializerSettings);
-                    await subscribeHandlerMethod(message);
-                    _channel.BasicAck(e.DeliveryTag, false);
+                    subscribeHandlerMethod(message).GetAwaiter().GetResult();
+
+                    _channel.BasicAck(deliveryTag: e.DeliveryTag, multiple: false);
                 };
 
                 _channel.BasicConsume(_queueName, true, consumer);

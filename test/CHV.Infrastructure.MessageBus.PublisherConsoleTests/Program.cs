@@ -28,7 +28,8 @@ namespace CHV.Infrastructure.MessageBus.PublisherConsoleTests
                 Console.WriteLine(msg);
                 bus.Publish(msg);
 
-                //Thread.Sleep(1000);
+                //Thread.Sleep(100);
+                if (i == 100) break;
             }
         }
     }
