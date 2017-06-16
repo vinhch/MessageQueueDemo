@@ -36,7 +36,11 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
                 AutomaticRecoveryEnabled = true
             };
             _connection = factory.CreateConnection();
+
             _channel = _connection.CreateModel();
+            _channel.ExchangeDeclare(_exchangeName, "fanout");
+            _channel.QueueDeclare(_queueName, durable: false, exclusive: false, autoDelete: false);
+            _channel.QueueBind(_queueName, _exchangeName, _routingKey, null);
         }
 
         public void Dispose()
@@ -51,16 +55,9 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
         {
             return Observable.Start(() =>
             {
-                lock (_channel)
-                {
-                    _channel.ExchangeDeclare(_exchangeName, "fanout");
-                    _channel.QueueDeclare(_queueName, durable: false, exclusive: false, autoDelete: false);
-                    _channel.QueueBind(_queueName, _exchangeName, _routingKey, null);
-
-                    var json = JsonConvert.SerializeObject(message, _jsonSerializerSettings);
-                    var bytes = Encoding.UTF8.GetBytes(json);
-                    _channel.BasicPublish(_exchangeName, _routingKey, null, bytes);
-                }
+                var json = JsonConvert.SerializeObject(message, _jsonSerializerSettings);
+                var bytes = Encoding.UTF8.GetBytes(json);
+                _channel.BasicPublish(_exchangeName, _routingKey, null, bytes);
             });
         }
 
@@ -68,10 +65,6 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
         {
             return Observable.Start(() =>
             {
-                _channel.ExchangeDeclare(_exchangeName, "fanout");
-                _channel.QueueDeclare(_queueName, true, false, false, null);
-                _channel.QueueBind(_queueName, _exchangeName, "");
-
                 var consumer = new EventingBasicConsumer(_channel);
                 consumer.Received += async (sender, e) =>
                 {
