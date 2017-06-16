@@ -1,5 +1,6 @@
 ﻿using CHV.Infrastructure.MessageBus.RabbitMq;
 using System;
+using System.Threading;
 
 namespace CHV.Infrastructure.MessageBus.PublisherConsoleTests
 {
@@ -7,7 +8,8 @@ namespace CHV.Infrastructure.MessageBus.PublisherConsoleTests
     {
         static void Main(string[] args)
         {
-            //Console.WriteLine("Hello World!");
+            Console.WriteLine("Press any key to start...");
+            Console.ReadKey();
 
             var uri = "amqp://test:123456@localhost:32771/test";
             var bus = new RabbitBusClient(uri, "test_fanout", "test_queue");
@@ -25,8 +27,9 @@ namespace CHV.Infrastructure.MessageBus.PublisherConsoleTests
                 var msg = $"Message {i}";
                 Console.WriteLine(msg);
                 bus.Publish(msg);
+
+                Thread.Sleep(1000);
             }
-            Console.ReadKey();
         }
     }
 }

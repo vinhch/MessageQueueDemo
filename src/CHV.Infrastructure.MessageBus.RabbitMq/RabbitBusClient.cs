@@ -16,6 +16,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
         private readonly IConnection _connection;
         private readonly string _exchangeName;
         private readonly string _queueName;
+        private readonly string _routingKey;
 
         private bool _disposed;
         private JsonSerializerSettings _jsonSerializerSettings = new JsonSerializerSettings
@@ -23,10 +24,12 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             TypeNameHandling = TypeNameHandling.All
         };
 
-        public RabbitBusClient(string uri, string exchangeName, string queueName)
+        public RabbitBusClient(string uri, string exchangeName, string queueName, string routingKey = "")
         {
             _exchangeName = exchangeName;
             _queueName = queueName;
+            _routingKey = routingKey;
+
             var factory = new ConnectionFactory
             {
                 Uri = uri,
@@ -48,11 +51,16 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
         {
             return Observable.Start(() =>
             {
-                _channel.ExchangeDeclare(_exchangeName, "fanout");
-                _channel.QueueDeclare(_queueName, durable: false, exclusive: false, autoDelete: false);
-                var json = JsonConvert.SerializeObject(message, _jsonSerializerSettings);
-                var bytes = Encoding.UTF8.GetBytes(json);
-                _channel.BasicPublish(_exchangeName, _queueName, null, bytes);
+                lock (_channel)
+                {
+                    _channel.ExchangeDeclare(_exchangeName, "fanout");
+                    _channel.QueueDeclare(_queueName, durable: false, exclusive: false, autoDelete: false);
+                    _channel.QueueBind(_queueName, _exchangeName, _routingKey, null);
+
+                    var json = JsonConvert.SerializeObject(message, _jsonSerializerSettings);
+                    var bytes = Encoding.UTF8.GetBytes(json);
+                    _channel.BasicPublish(_exchangeName, _routingKey, null, bytes);
+                }
             });
         }
 
