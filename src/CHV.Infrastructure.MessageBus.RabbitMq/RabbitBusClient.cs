@@ -68,12 +68,12 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             return Observable.Start(() =>
             {
                 var consumer = new EventingBasicConsumer(_channel);
-                consumer.Received += (sender, e) =>
+                consumer.Received += async (sender, e) =>
                 {
                     var body = e.Body;
                     var json = Encoding.UTF8.GetString(body);
                     var message = JsonConvert.DeserializeObject<TMessage>(json, _jsonSerializerSettings);
-                    subscribeHandlerMethod(message).GetAwaiter().GetResult();
+                    await subscribeHandlerMethod(message);
 
                     _channel.BasicAck(deliveryTag: e.DeliveryTag, multiple: false);
                 };
