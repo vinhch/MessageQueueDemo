@@ -41,6 +41,8 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             _channel.ExchangeDeclare(_exchangeName, "fanout");
             _channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false);
             _channel.QueueBind(_queueName, _exchangeName, _routingKey, null);
+            // Configure how we receive messages
+            _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false); // Process only one message at a time
         }
 
         public void Dispose()
@@ -76,7 +78,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
                     _channel.BasicAck(deliveryTag: e.DeliveryTag, multiple: false);
                 };
 
-                _channel.BasicConsume(_queueName, true, consumer);
+                _channel.BasicConsume(_queueName, false, consumer);
             });
         }
     }
