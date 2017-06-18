@@ -15,6 +15,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
         private readonly IModel _channel;
         private readonly IConnection _connection;
         private readonly string _exchangeName;
+        private readonly string _exchangeType;
         private readonly string _queueName;
         private readonly string _routingKey;
 
@@ -24,9 +25,10 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             TypeNameHandling = TypeNameHandling.All
         };
 
-        public RabbitBusClient(string uri, string exchangeName, string queueName, string routingKey = "")
+        public RabbitBusClient(string uri, string exchangeName, string exchangeType, string queueName, string routingKey = "")
         {
             _exchangeName = exchangeName;
+            _exchangeType = exchangeType;
             _queueName = queueName;
             _routingKey = routingKey;
 
@@ -38,7 +40,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             _connection = factory.CreateConnection();
 
             _channel = _connection.CreateModel();
-            _channel.ExchangeDeclare(_exchangeName, "fanout");
+            _channel.ExchangeDeclare(_exchangeName, _exchangeType);
             _channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false);
             _channel.QueueBind(_queueName, _exchangeName, _routingKey, null);
             // Configure how we receive messages

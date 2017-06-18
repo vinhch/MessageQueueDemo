@@ -12,7 +12,7 @@ namespace CHV.Infrastructure.MessageBus.PublisherConsoleTests
             Console.ReadKey();
 
             var uri = "amqp://test:123456@localhost:32771/test";
-            var bus = new RabbitBusClient(uri, "test_fanout", "test_queue");
+            var bus = new RabbitBusClient(uri, "test_fanout", "fanout", "test_queue");
 
             var i = 0;
 
