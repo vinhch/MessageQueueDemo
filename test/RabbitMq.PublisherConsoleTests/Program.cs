@@ -1,8 +1,7 @@
 ﻿using CHV.Infrastructure.MessageBus.RabbitMq;
 using System;
-using System.Threading;
 
-namespace CHV.Infrastructure.MessageBus.PublisherConsoleTests
+namespace RabbitMq.PublisherConsoleTests
 {
     class Program
     {

@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace CHV.Infrastructure.MessageBus.SubscriberConsoleTests
+namespace RabbitMq.SubscriberConsoleTests
 {
     class Program
     {
