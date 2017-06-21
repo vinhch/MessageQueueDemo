@@ -83,5 +83,15 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
                 _channel.BasicConsume(_queueName, false, consumer);
             });
         }
+
+        public Task<TResponse> RequestAsync<TRequest, TResponse>(TRequest message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RespondAsync<TRequest, TResponse>(Func<TRequest, Task<TResponse>> messageHandlerMethod)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
