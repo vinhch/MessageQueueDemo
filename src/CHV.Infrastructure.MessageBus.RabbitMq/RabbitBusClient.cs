@@ -20,6 +20,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
         private readonly string _routingKey;
 
         private bool _disposed;
+        private string _replyQueueName = "amq.rabbitmq.reply-to";
         private JsonSerializerSettings _jsonSerializerSettings = new JsonSerializerSettings
         {
             TypeNameHandling = TypeNameHandling.All
@@ -42,7 +43,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             _channel = _connection.CreateModel();
             _channel.ExchangeDeclare(_exchangeName, _exchangeType);
             _channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false);
-            _channel.QueueBind(_queueName, _exchangeName, _routingKey, null);
+            //_channel.QueueBind(_queueName, _exchangeName, _routingKey, null);
             // Configure how we receive messages
             _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false); // Process only one message at a time
         }
@@ -70,6 +71,8 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             return Observable.Start(() =>
             {
                 var consumer = new EventingBasicConsumer(_channel);
+                _channel.BasicConsume(_queueName, false, consumer);
+
                 consumer.Received += async (sender, e) =>
                 {
                     var body = e.Body;
@@ -80,18 +83,76 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
                     _channel.BasicAck(deliveryTag: e.DeliveryTag, multiple: false);
                 };
 
-                _channel.BasicConsume(_queueName, false, consumer);
             });
         }
 
-        public Task<TResponse> RequestAsync<TRequest, TResponse>(TRequest message)
+        // ~Publish
+        public async Task<TResponse> RequestAsync<TRequest, TResponse>(TRequest message)
         {
-            throw new NotImplementedException();
+            var corrId = Guid.NewGuid().ToString();
+
+            var props = _channel.CreateBasicProperties();
+            props.ReplyTo = _replyQueueName;
+            props.CorrelationId = corrId;
+
+            var json = JsonConvert.SerializeObject(message, _jsonSerializerSettings);
+            var bytes = Encoding.UTF8.GetBytes(json);
+            _channel.BasicPublish(_exchangeName, _routingKey, props, bytes);
+
+            #region read response message from the callback_queue
+            var consumer = new EventingBasicConsumer(_channel);
+            _channel.BasicConsume(_replyQueueName, true, consumer);
+
+            var eventArgsObservable = Observable
+                .FromEventPattern<BasicDeliverEventArgs>(
+                    h => consumer.Received += h,
+                    h => consumer.Received -= h)
+                .Select(x => x.EventArgs);
+
+            var ea = await eventArgsObservable.FirstAsync(s => s.BasicProperties.CorrelationId == corrId);
+            var responseJson = Encoding.UTF8.GetString(ea.Body);
+            return JsonConvert.DeserializeObject<TResponse>(responseJson, _jsonSerializerSettings);
+            #endregion
         }
 
-        public Task RespondAsync<TRequest, TResponse>(Func<TRequest, Task<TResponse>> messageHandlerMethod)
+        // ~Subscribe
+        public async Task RespondAsync<TRequest, TResponse>(Func<TRequest, Task<TResponse>> messageHandlerMethod)
         {
-            throw new NotImplementedException();
+            var consumer = new EventingBasicConsumer(_channel);
+            _channel.BasicConsume(_queueName, false, consumer);
+
+            object response = null;
+
+            consumer.Received += async (sender, e) =>
+            {
+                var props = e.BasicProperties;
+                var replyProps = _channel.CreateBasicProperties();
+                replyProps.CorrelationId = props.CorrelationId;
+
+                var body = e.Body;
+                try
+                {
+                    var json = Encoding.UTF8.GetString(body);
+                    var message = JsonConvert.DeserializeObject<TRequest>(json, _jsonSerializerSettings);
+
+                    response = await messageHandlerMethod(message);
+                }
+                catch (Exception ex)
+                {
+                    response = ex;
+                }
+                finally
+                {
+                    var responseJson = JsonConvert.SerializeObject(response, _jsonSerializerSettings);
+                    var responseBytes = Encoding.UTF8.GetBytes(responseJson);
+
+                    //_channel.BasicPublish(exchange: "", routingKey: props.ReplyTo, basicProperties: replyProps,
+                    //    body: responseBytes);
+                    _channel.BasicPublish(exchange: "", routingKey: _replyQueueName, basicProperties: replyProps,
+                        body: responseBytes);
+                    _channel.BasicAck(deliveryTag: e.DeliveryTag, multiple: false);
+                }
+            };
         }
     }
 }

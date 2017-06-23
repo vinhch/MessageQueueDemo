@@ -26,7 +26,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
 
         public IObservable<Unit> Publish<TMessage>(TMessage message)
         {
-            return Observable.StartAsync(async () => 
+            return Observable.StartAsync(async () =>
             {
                 await _client.PublishAsync(message);
             });
@@ -41,6 +41,18 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
                     await subscribeHandlerMethod(msg);
                 });
             });
+        }
+
+        // ~Publish
+        public Task<TResponse> RequestAsync<TRequest, TResponse>(TRequest message)
+        {
+            throw new NotImplementedException();
+        }
+
+        // ~Subscribe
+        public Task RespondAsync<TRequest, TResponse>(Func<TRequest, Task<TResponse>> messageHandlerMethod)
+        {
+            throw new NotImplementedException();
         }
     }
 }
