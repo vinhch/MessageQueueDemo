@@ -97,7 +97,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
 
             var json = JsonConvert.SerializeObject(message, _jsonSerializerSettings);
             var bytes = Encoding.UTF8.GetBytes(json);
-            _channel.BasicPublish(_exchangeName, _routingKey, props, bytes);
+            _channel.BasicPublish(_exchangeName, _queueName, props, bytes);
 
             #region read response message from the callback_queue
             var consumer = new EventingBasicConsumer(_channel);
