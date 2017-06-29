@@ -23,6 +23,15 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             TypeNameHandling = TypeNameHandling.All
         };
 
+        protected EventingBasicConsumer _consumer;
+        protected virtual void CreateConsumer()
+        {
+            if (_consumer != null) return;
+
+            _consumer = new EventingBasicConsumer(_channel);
+            _channel.BasicConsume(_queueName, false, _consumer);
+        }
+
         /*
          * To create exchange, must have exchangeName & exchangeType
          * To create a queue must have queueName
@@ -78,5 +87,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             _connection.Dispose();
             _disposed = true;
         }
+
+
     }
 }

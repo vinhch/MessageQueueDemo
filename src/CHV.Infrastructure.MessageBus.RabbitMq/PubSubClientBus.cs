@@ -26,19 +26,18 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             });
         }
 
-        public IObservable<Unit> Subscribe<TMessage>(Func<TMessage, Task> subscribeHandlerMethod)
+        public IObservable<Unit> Subscribe<TMessage>(Func<TMessage, Task> subscribeHandler)
         {
             return Observable.Start(() =>
             {
-                var consumer = new EventingBasicConsumer(_channel);
-                _channel.BasicConsume(_queueName, false, consumer);
+                CreateConsumer();
 
-                consumer.Received += async (sender, eventArgs) =>
+                _consumer.Received += async (sender, eventArgs) =>
                 {
                     var body = eventArgs.Body;
                     var json = Encoding.UTF8.GetString(body);
                     var message = JsonConvert.DeserializeObject<TMessage>(json, _jsonSerializerSettings);
-                    await subscribeHandlerMethod(message);
+                    await subscribeHandler(message);
 
                     _channel.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
                 };

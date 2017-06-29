@@ -49,8 +49,8 @@ namespace RabbitMq.PublisherConsoleTests
                 var response = bus.RequestAsync<string, string>(msg).GetAwaiter().GetResult();
                 Console.WriteLine($"OK: {response}");
 
-                Thread.Sleep(5000);
-                if (i == 10) break;
+                Thread.Sleep(1000);
+                //if (i == 10) break;
             }
         }
     }

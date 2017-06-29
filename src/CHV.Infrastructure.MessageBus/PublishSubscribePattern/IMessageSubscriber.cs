@@ -6,6 +6,6 @@ namespace CHV.Infrastructure.MessageBus
 {
     public interface IMessageSubscriber : IDisposable
     {
-        IObservable<Unit> Subscribe<TMessage>(Func<TMessage, Task> subscribeHandlerMethod);
+        IObservable<Unit> Subscribe<TMessage>(Func<TMessage, Task> subscribeHandler);
     }
 }

@@ -2,6 +2,8 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,14 +20,12 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
         /*
          * ~Subscribe
          */
-        public async Task RespondAsync<TRequest, TResponse>(Func<TRequest, Task<TResponse>> messageHandlerMethod)
+        public async Task RespondAsync<TRequest, TResponse>(Func<TRequest, Task<TResponse>> respondHandler)
         {
-            var consumer = new EventingBasicConsumer(_channel);
-            _channel.BasicConsume(_queueName, false, consumer);
-
+            CreateConsumer();
             object response = null;
 
-            consumer.Received += async (sender, eventArgs) =>
+            _consumer.Received += async (sender, eventArgs) =>
             {
                 var props = eventArgs.BasicProperties;
                 var replyProps = _channel.CreateBasicProperties();
@@ -37,7 +37,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
                     var json = Encoding.UTF8.GetString(body);
                     var message = JsonConvert.DeserializeObject<TRequest>(json, _jsonSerializerSettings);
 
-                    response = await messageHandlerMethod(message);
+                    response = await respondHandler(message);
                 }
                 catch (Exception ex)
                 {
@@ -52,6 +52,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
                         body: responseBytes);
                     //_channel.BasicPublish(exchange: "", routingKey: _replyQueueName, basicProperties: replyProps,
                     //    body: responseBytes);
+
                     _channel.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
                 }
             };

@@ -19,6 +19,14 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             _replyQueueName = replyQueueName;
         }
 
+        protected override void CreateConsumer()
+        {
+            if (_consumer != null) return;
+
+            _consumer = new EventingBasicConsumer(_channel);
+            _channel.BasicConsume(_replyQueueName, true, _consumer);
+        }
+
         /*
          * ~Publish
          * Note: The client needs to create its consumer before publishing the request
@@ -31,13 +39,12 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             var corrId = Guid.NewGuid().ToString();
 
             #region create a consumer first to listen the reply
-            var consumer = new EventingBasicConsumer(_channel);
-            _channel.BasicConsume(_replyQueueName, true, consumer);
+            CreateConsumer();
 
             var eventArgsObservable = Observable
                 .FromEventPattern<BasicDeliverEventArgs>(
-                    h => consumer.Received += h,
-                    h => consumer.Received -= h)
+                    h => _consumer.Received += h,
+                    h => _consumer.Received -= h)
                 .Select(x => x.EventArgs);
             #endregion
 
