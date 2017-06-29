@@ -37,7 +37,7 @@ namespace RabbitMq.PublisherConsoleTests
         static void TestRequest()
         {
             var uri = "amqp://test:123456@localhost:32771/test";
-            var bus = new RabbitBusClient(uri, "", "", "test_queue1");
+            var bus = new RabbitBusClient(uri, routingKey: "test_queue1");
 
             var i = 0;
             while (true)

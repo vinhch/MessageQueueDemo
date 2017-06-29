@@ -32,11 +32,12 @@ namespace RabbitMq.SubscriberConsoleTests
         static void TestRespond()
         {
             var uri = "amqp://test:123456@localhost:32771/test";
-            var bus = new RabbitBusClient(uri, "", "", "test_queue1");
+            var bus = new RabbitBusClient(uri, queueName: "test_queue1");
 
             bus.RespondAsync<string, string>(async (msg) =>
             {
                 await Console.Out.WriteLineAsync(msg);
+                await Console.Out.WriteLineAsync($"Respond to {msg}");
                 return $"Respond to {msg}";
             }).GetAwaiter().GetResult();
         }
