@@ -2,9 +2,6 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
-using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CHV.Infrastructure.MessageBus.RabbitMq
 {
@@ -87,7 +84,5 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             _connection.Dispose();
             _disposed = true;
         }
-
-
     }
 }
