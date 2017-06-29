@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CHV.Infrastructure.MessageBus.RabbitMq
 {
-    public class RawRabbitBusClient : IMessageBusClient
+    public class RawRabbitBusClient : IPubSubClientBus
     {
         private readonly IBusClient _client;
 

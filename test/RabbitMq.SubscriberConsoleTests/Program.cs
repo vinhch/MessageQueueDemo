@@ -20,7 +20,7 @@ namespace RabbitMq.SubscriberConsoleTests
         static void TestSubscribe()
         {
             var uri = "amqp://test:123456@localhost:32771/test";
-            var bus = new RabbitBusClient(uri, "test_fanout", "fanout", "test_queue");
+            var bus = new PubSubClientBus(uri, "test_fanout", "fanout", "test_queue");
 
             bus.Subscribe<string>(async (msg) =>
             {
@@ -32,7 +32,7 @@ namespace RabbitMq.SubscriberConsoleTests
         static void TestRespond()
         {
             var uri = "amqp://test:123456@localhost:32771/test";
-            var bus = new RabbitBusClient(uri, queueName: "test_queue1");
+            var bus = new RespondClientBus(uri, queueName: "test_queue1");
 
             bus.RespondAsync<string, string>(async (msg) =>
             {
