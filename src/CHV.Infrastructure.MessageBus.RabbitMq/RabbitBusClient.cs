@@ -26,7 +26,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             if (_consumer != null) return;
 
             _consumer = new EventingBasicConsumer(_channel);
-            _channel.BasicConsume(_queueName, false, _consumer);
+            _channel.BasicConsume(queue: _queueName, noAck: false, consumer: _consumer);
         }
 
         /*
@@ -56,13 +56,13 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             // create a exchange
             if (!string.IsNullOrWhiteSpace(_exchangeName) && !string.IsNullOrWhiteSpace(_exchangeType))
             {
-                _channel.ExchangeDeclare(_exchangeName, _exchangeType);
+                _channel.ExchangeDeclare(exchange: _exchangeName, type: _exchangeType);
             }
 
             // create a queue
             if (!string.IsNullOrWhiteSpace(_queueName))
             {
-                _channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false);
+                _channel.QueueDeclare(queue: _queueName, durable: true, exclusive: false, autoDelete: false);
             }
 
             // create a binding between exchange and queue using routingKey
@@ -70,7 +70,8 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
                 && !string.IsNullOrWhiteSpace(_exchangeName)
                 && !string.IsNullOrWhiteSpace(_queueName))
             {
-                _channel.QueueBind(_queueName, _exchangeName, _routingKey, null);
+                _channel.QueueBind(queue: _queueName, exchange: _exchangeName,
+                    routingKey: _routingKey, arguments: null);
             }
 
             // Configure how we receive messages

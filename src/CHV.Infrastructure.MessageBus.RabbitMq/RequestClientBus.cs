@@ -11,12 +11,16 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
     public class RequestClientBus : RabbitBusClient, IMessageRequestor
     {
         private string _replyQueueName = "amq.rabbitmq.reply-to";
+        private int _responseTimeOutMilliseconds;
 
         public RequestClientBus(string uri, string exchangeName = "", string exchangeType = "",
-            string queueName = "", string routingKey = "", string replyQueueName = "amq.rabbitmq.reply-to")
+            string queueName = "", string routingKey = "",
+            string replyQueueName = "amq.rabbitmq.reply-to",
+            int responseTimeOutMilliseconds = 3000)
             : base(uri, exchangeName, exchangeType, queueName, routingKey)
         {
             _replyQueueName = replyQueueName;
+            _responseTimeOutMilliseconds = responseTimeOutMilliseconds;
         }
 
         protected override void CreateConsumer()
@@ -24,7 +28,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             if (_consumer != null) return;
 
             _consumer = new EventingBasicConsumer(_channel);
-            _channel.BasicConsume(_replyQueueName, true, _consumer);
+            _channel.BasicConsume(queue: _replyQueueName, noAck: true, consumer: _consumer);
         }
 
         /*
@@ -45,7 +49,8 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
                 .FromEventPattern<BasicDeliverEventArgs>(
                     h => _consumer.Received += h,
                     h => _consumer.Received -= h)
-                .Select(x => x.EventArgs);
+                .Select(x => x.EventArgs)
+                .Timeout(TimeSpan.FromMilliseconds(_responseTimeOutMilliseconds));
             #endregion
 
             #region publishing message
@@ -59,7 +64,9 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             #endregion
 
             #region read response message from the callback_queue
-            var ea = await eventArgsObservable.FirstAsync(s => s.BasicProperties.CorrelationId == corrId);
+            var ea = await eventArgsObservable
+                .FirstAsync(s => s.BasicProperties.CorrelationId == corrId);
+
             var responseJson = Encoding.UTF8.GetString(ea.Body);
             return JsonConvert.DeserializeObject<TResponse>(responseJson, _jsonSerializerSettings);
             #endregion
