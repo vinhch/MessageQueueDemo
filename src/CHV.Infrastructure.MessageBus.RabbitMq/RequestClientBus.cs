@@ -32,7 +32,8 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
         }
 
         /*
-         * ~Publish
+         * Publish & Request need routingKey and exchangeName
+         *
          * Note: The client needs to create its consumer before publishing the request
          * (otherwise the broker can't substitute reply_to correctly,
          * and you see that ChannelClose exception as the result,

@@ -15,7 +15,7 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
         }
 
         /*
-         * ~Subscribe
+         * Subscribe & Respond need queueName
          */
         public async Task RespondAsync<TRequest, TResponse>(Func<TRequest, Task<TResponse>> respondHandler)
         {

@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using System;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -16,6 +15,9 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
         {
         }
 
+        /*
+         * Publish & Request need routingKey and exchangeName
+         */
         public IObservable<Unit> Publish<TMessage>(TMessage message)
         {
             return Observable.Start(() =>
@@ -26,6 +28,9 @@ namespace CHV.Infrastructure.MessageBus.RabbitMq
             });
         }
 
+        /*
+         * Subscribe & Respond need queueName
+         */
         public IObservable<Unit> Subscribe<TMessage>(Func<TMessage, Task> subscribeHandler)
         {
             return Observable.Start(() =>
